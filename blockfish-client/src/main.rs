@@ -9,7 +9,7 @@ mod util;
 mod view;
 
 use block_stacker::{Config as BSConfig, Ruleset};
-use blockfish::Config as BFConfig;
+use blockfish::{Config as BFConfig, Rule};
 
 use argh::FromArgs;
 use thiserror::Error;
@@ -70,7 +70,7 @@ impl Args {
     }
 
     fn ai_config(&self) -> BFConfig {
-        self.ai_params.clone().unwrap_or_default()
+        self.ai_params.clone().unwrap_or_else(|| BFConfig { rule: Rule::Techmino, ..BFConfig::default() })
     }
 }
 
@@ -184,7 +184,8 @@ fn entry(mut args: Args) -> Result<()> {
     let theme = theme::Theme::from_config_file(&config_dir)?;
 
     // build ai, game state, view and controller
-    let rules = std::rc::Rc::new(Ruleset::guideline());
+    // let rules = std::rc::Rc::new(Ruleset::guideline());
+    let rules = std::rc::Rc::new(Ruleset::techmino());
     let ai = blockfish::ai::AI::new(args.ai_config());
     let stacker = block_stacker::Stacker::new(rules.clone(), args.game_config());
     let view = view::View::new(resources, rules, controls, &theme);

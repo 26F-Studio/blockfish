@@ -3,7 +3,7 @@ import re, sqlite3, sys, random, time, argparse, math, itertools
 from subprocess import Popen, PIPE, DEVNULL
 
 class Cfg:
-    PARAMS = ('ai0', 'ai1', 'ai2', 'ai3', 'ai4')
+    PARAMS = ('rule', 'ai0', 'ai1', 'ai2', 'ai3', 'ai4')
 
     def __init__(self, x):
         if isinstance(x, list) or isinstance(x, tuple):
@@ -21,8 +21,8 @@ class Cfg:
         self.dct = {p: v for p, v in zip(params, values)}
 
     def _parse(s):
-        m = re.match(r'^(\d+)/(\d+(,\d+){3})$', s)
-        return m and (int(m[1]), *(int(v) for v in m[2].split(',')))
+        m = re.match(r'^([^/]*)/(\d+)/(\d+(,\d+){3})$', s)
+        return m and (m[1], int(m[2]), *(int(v) for v in m[3].split(',')))
 
     def to_sql_expr(self):
         return ' AND '.join('{} = :{}'.format(p, p) for p in self.params) or 'TRUE'
@@ -31,7 +31,8 @@ class Cfg:
         return self.dct.get(p, None)
 
     def __repr__(self):
-        return '{}/{},{},{},{}'.format(
+        return '{}/{}/{},{},{},{}'.format(
+            self.dct.get('rule', '*'),
             self.dct.get('ai0', '*'),
             self.dct.get('ai1', '*'),
             self.dct.get('ai2', '*'),
@@ -97,6 +98,9 @@ class Race:
             m = re.match(rb'topped out early\n', line)
             if m:
                 data['topout'] = True
+            m = re.match(rb'rule: (.*?)\n', line)
+            if m:
+                data['rule'] = str(m[1], 'utf8')
         return data
 
     def poll(self):
@@ -125,7 +129,8 @@ class DB:
         try:
             c.execute("""
             CREATE TABLE fishtest
-                ( seed TEXT
+                ( rule TEXT
+                , seed TEXT
                 , time REAL
                 , topout INTEGER
                 , ds INTEGER
@@ -147,10 +152,11 @@ class DB:
         c = self.conn.cursor()
         c.execute("""
         INSERT INTO fishtest
-            (seed, time, topout, ds, pc, ai0, ai1, ai2, ai3, ai4)
+            (rule, seed, time, topout, ds, pc, ai0, ai1, ai2, ai3, ai4)
         VALUES
-            (:seed, :time, :topout, :ds, :pc, :ai0, :ai1, :ai2, :ai3, :ai4)
+            (:rule, :seed, :time, :topout, :ds, :pc, :ai0, :ai1, :ai2, :ai3, :ai4)
         """, {
+            'rule': result.get('rule'),
             'seed': result.get('seed'),
             'time': result.get('time'),
             'topout': 1 if result.get('topout') else 0,
@@ -198,7 +204,7 @@ class DB:
         c = self.conn.cursor()
         c.execute("""
         SELECT
-            ds, pc, ai0, ai1, ai2, ai3, ai4
+            ds, pc, rule, ai0, ai1, ai2, ai3, ai4
         FROM fishtest
         WHERE
             {} AND {} AND {}

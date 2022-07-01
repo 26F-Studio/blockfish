@@ -1,9 +1,32 @@
 use std::convert::{TryFrom, TryInto};
 use thiserror::Error;
+use std::str::FromStr;
+
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+pub enum Rule {
+    Guideline,
+    Techmino
+}
+
+#[derive(Debug, Error)]
+#[error("invalid ruleset")]
+pub struct ParseRuleError;
+
+impl FromStr for Rule {
+    type Err = ParseRuleError;
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "guideline" => Ok(Rule::Guideline),
+            "techmino" => Ok(Rule::Techmino),
+            _ => Err(ParseRuleError)
+        }
+    }
+}
 
 /// AI configuration.
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct Config {
+    pub rule: Rule,
     pub search_limit: usize,
     pub parameters: Parameters,
 }
@@ -11,6 +34,7 @@ pub struct Config {
 impl Default for Config {
     fn default() -> Self {
         Self {
+            rule: Rule::Guideline,
             search_limit: 50_000,
             parameters: Parameters::default(),
         }
@@ -45,6 +69,8 @@ pub enum ParseConfigError {
     Int(#[from] std::num::ParseIntError),
     #[error("invalid score parameters")]
     Parameters(#[from] ParseParametersError),
+    #[error("invalid rule")]
+    Rule(#[from] ParseRuleError),
     #[error("expected '<heap-size>' or '<heap-size>/<score-params>'")]
     Other,
 }
@@ -53,6 +79,8 @@ impl std::str::FromStr for Config {
     type Err = ParseConfigError;
     fn from_str(s: &str) -> Result<Self, ParseConfigError> {
         let mut ss = s.split('/');
+        let rule = ss.next().ok_or(ParseConfigError::Rule(ParseRuleError))?;
+        let rule = rule.parse::<Rule>()?;
         let search_limit = ss.next().ok_or(ParseConfigError::Other)?;
         let search_limit = search_limit.parse::<usize>()? * 1_000;
         let parameters = match ss.next() {
@@ -68,6 +96,7 @@ impl std::str::FromStr for Config {
             Err(ParseConfigError::Other)
         } else {
             Ok(Config {
+                rule,
                 search_limit,
                 parameters,
             })
@@ -130,6 +159,7 @@ mod test {
         assert_eq!(
             "15".parse::<Config>().unwrap(),
             Config {
+                rule: Rule::Guideline,
                 search_limit: 15_000,
                 parameters: Parameters::default()
             }
@@ -137,6 +167,7 @@ mod test {
         assert_eq!(
             "15/1,2,3,4".parse::<Config>().unwrap(),
             Config {
+                rule: Rule::Guideline,
                 search_limit: 15_000,
                 parameters: Parameters {
                     row_factor: 1,
@@ -154,6 +185,7 @@ mod test {
             format!(
                 "{}",
                 Config {
+                    rule: Rule::Guideline,
                     search_limit: 15_000,
                     parameters: Parameters {
                         row_factor: 1,

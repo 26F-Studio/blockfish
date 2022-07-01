@@ -15,6 +15,11 @@ path = "src/bin/gen_shtb.rs"
 required-features = ["gen-shtb"]
 
 [[bin]]
+name = "blockfish-gen-shtb-trs"
+path = "src/bin/gen_shtb_trs.rs"
+required-features = ["gen-shtb"]
+
+[[bin]]
 name = "blockfish"
 path = "src/bin/service.rs"
 required-features = ["service"]

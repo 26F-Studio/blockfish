@@ -1,6 +1,6 @@
 use argh::FromArgs;
 use block_stacker::{Config as BSConfig, Ruleset, Stacker};
-use blockfish::{ai::AI, Config as BFConfig, StackerExt as _};
+use blockfish::{ai::AI, Config as BFConfig, StackerExt as _, Rule};
 use serde::Serialize;
 use std::io::Write;
 use std::path::PathBuf;
@@ -147,6 +147,7 @@ impl Race {
             writeln!(w, "{}L downstack", ds)?;
             writeln!(w, "total time: {:.2}s ({:.2}pps)", elapsed, pps)?;
             writeln!(w, "PRNG seed: {}", self.stacker.prng_seed())?;
+            writeln!(w, "rule: {:?}", self.ai.config().rule)?;
         }
         Ok(())
     }
@@ -168,10 +169,16 @@ fn main() {
     let args = argh::from_env::<Args>();
 
     // cheese race bot
+    let ai_config = args.to_ai_config();
+    let rule = ai_config.rule.clone();
     let mut race = Race::new(
-        args.to_ai_config(),
+        ai_config,
         args.to_game_config(),
-        Ruleset::guideline(),
+        //Ruleset::guideline(),
+        match rule {
+            Rule::Guideline => Ruleset::guideline(),
+            Rule::Techmino => Ruleset::techmino(),
+        }
     );
 
     // periodic stats updates

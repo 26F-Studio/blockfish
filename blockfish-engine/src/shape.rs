@@ -330,10 +330,16 @@ impl ShapeTable {
 }
 
 static SRS_BYTES: &[u8] = include_bytes!("../../support/test/srs-shape-table.json");
+static TRS_BYTES: &[u8] = include_bytes!("../../support/test/trs-shape-table.json");
 
 /// Returns a new copy of the SRS shape table.
 pub fn srs() -> ShapeTable {
     serde_json::from_slice(SRS_BYTES).expect("BUG: SRS data is malformed!")
+}
+
+/// Returns a new copy of the TRS shape table.
+pub fn trs() -> ShapeTable {
+    serde_json::from_slice(TRS_BYTES).expect("BUG: SRS data is malformed!")
 }
 
 #[cfg(test)]

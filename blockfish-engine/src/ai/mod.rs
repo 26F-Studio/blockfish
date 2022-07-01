@@ -1,6 +1,6 @@
 use crate::{
-    config::Config,
-    shape::{srs, ShapeTable},
+    config::{Config, Rule},
+    shape::{srs, trs, ShapeTable},
     BasicMatrix, Color, Input,
 };
 
@@ -68,9 +68,13 @@ pub struct AI {
 impl AI {
     /// Constructs a new Blockfish AI instance with the given engine configuration.
     pub fn new(config: Config) -> Self {
+        let rule = config.rule.clone();
         Self {
             config,
-            shape_table: std::sync::Arc::new(srs()),
+            shape_table: std::sync::Arc::new(match rule {
+                Rule::Guideline => srs(),
+                Rule::Techmino => trs()
+            }),
             all_tx: None,
         }
     }

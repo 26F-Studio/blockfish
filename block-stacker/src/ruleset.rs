@@ -67,6 +67,10 @@ impl Ruleset {
         serde_json::from_slice(GUIDELINE_BYTES).expect("BUG: guideline data is malformed!")
     }
 
+    pub fn techmino() -> Ruleset {
+        serde_json::from_slice(TECHMINO_BYTES).expect("BUG: techmino data is malformed!")
+    }
+
     fn mino(&self, typ: PieceType) -> &PolyMino {
         self.minos.get(&typ).expect("BUG: no such mino")
     }
