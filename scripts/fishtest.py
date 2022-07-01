@@ -178,18 +178,18 @@ class DB:
         c = self.conn.cursor()
         c.execute("""
         SELECT
-            count(*), sum(pc), sum(pc*pc)
+            pc
         FROM fishtest
         WHERE
             NOT topout AND {}
         """.format(cfg.to_sql_expr()),
             cfg.dct
         )
-        n, sm, smsq = c.fetchone()
-        if n == 0:
+        data = c.fetchall()
+        if len(data) == 0:
             return None
         else:
-            return Dist(n, sm, smsq)
+            return Dist([d[0] for d in data])
 
     def piece_counts(self, ds = None, cfg_filter = None, include_topout = False):
         args = {}
@@ -215,14 +215,57 @@ class DB:
         )
 
 class Dist:
-    def __init__(self, n, sm, smsq):
-        self.n = n
-        self.avg = sm / n
-        self.sdsq = smsq / n - sm ** 2 / n ** 2
-        self.sd = math.sqrt(self.sdsq)
+    ALPHA = 0.05
+    def __init__(self, data):
+        from numpy import average
+        self.data = data
+        self.avg = average(data)
 
     def __repr__(self):
-        return 'samples: {}, avg: {:.2f}, sd: {:.2f}'.format(self.n, self.avg, self.sd)
+        from scipy.stats import describe
+        return '\n'.join(f'{key}: {value}' for key, value in describe(self.data)._asdict().items())
+
+    def is_normal(self, alpha=ALPHA):
+        from scipy.stats import shapiro, normaltest
+        stat_1, p_1 = shapiro(self.data)
+        print('Shapiro-Wilk: Statistics=%.3f, p=%.3f' % (stat_1, p_1))
+        stat_2, p_2 = normaltest(self.data)
+        print('D’Agostino’s K^2: Statistics=%.3f, p=%.3f' % (stat_2, p_2))
+        if p_1 > alpha and p_2 > alpha:
+            print('Sample looks Gaussian')
+            return True
+        else:
+            print('Sample does not look like Gaussian')
+            return False
+
+    def same_dist(self, other, alpha=ALPHA):
+        normal1 = self.is_normal()
+        normal2 = other.is_normal()
+        if normal1 and normal2:
+            from scipy.stats import bartlett, ttest_ind
+            stat_var, p_var = bartlett(self.data, other.data)
+            print('Bartlett’s test: Statistics=%.3f, p=%.3f' % (stat_var, p_var))
+            if p_var > alpha:
+                print('Seem to have the same variance')
+                equal_var = True
+            else:
+                print('Do not seem to have the same variance')
+                equal_var = False
+            stat, p = ttest_ind(self.data, other.data, equal_var=equal_var)
+            if equal_var:
+                print("2-sample t-test: Statistics=%.3f, p=%.3f" % (stat, p))
+            else:
+                print("Welch's t-test: Statistics=%.3f, p=%.3f" % (stat, p))
+            if p < alpha:
+                print('Seem to be different')
+                return False
+            else:
+                print('Do not seem to be different')
+                return True
+        else:
+            raise NotImplementedError()
+
+
 
 def run(db, goal, cfg, jobs):
     db = DB(db)
@@ -284,7 +327,11 @@ def analyze(db, cfg_name):
             all_dists.append((cfg, pc_dist))
     all_dists.sort(key = lambda x: x[1].avg)
     for cfg, dist in all_dists:
-        print('({!r}) {!r}'.format(cfg, dist))
+        print('{!r}:'.format(cfg))
+        print(dist)
+        print()
+    if len(all_dists) == 2:
+        all_dists[0][1].same_dist(all_dists[1][1])
 
 def plot(db, ds):
     db = DB(db, auto_create = False)
