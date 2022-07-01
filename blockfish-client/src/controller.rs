@@ -163,8 +163,13 @@ impl<'v> Controller<'v> {
                 let dx = if op == GameOp::MoveLeft { -1 } else { 1 };
                 upd.set(Update::PIECE, self.stacker.move_horizontal(dx));
             }
-            GameOp::RotateCCW | GameOp::RotateCW => {
-                let dr = if op == GameOp::RotateCCW { -1 } else { 1 };
+            GameOp::RotateCCW | GameOp::RotateCW | GameOp::RotateFlip => {
+                let dr = match op {
+                    GameOp::RotateCCW => -1,
+                    GameOp::RotateCW => 1,
+                    GameOp::RotateFlip => 2,
+                    _ => unreachable!()
+                };
                 upd.set(Update::PIECE, self.stacker.rotate(dr));
             }
             GameOp::SonicDrop => {

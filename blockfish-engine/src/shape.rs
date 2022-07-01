@@ -136,6 +136,7 @@ impl<'a> ShapeRef<'a> {
             Input::Right => (r0, &[(0, 1)]),
             Input::CCW => (r0.ccw(), self.kicks(r0, r0.ccw())),
             Input::CW => (r0.cw(), self.kicks(r0, r0.cw())),
+            Input::Flip => (r0.flip(), self.kicks(r0, r0.flip())),
             _ => {
                 log::error!("invalid input passed to `try_input`");
                 return None;
@@ -252,6 +253,7 @@ impl KickTable {
             let ori = Orientation::from_u8(r as u8).unwrap();
             kicks.insert(Kick(ori, ori.ccw()), rules.kicks(typ, r, r - 1).collect());
             kicks.insert(Kick(ori, ori.cw()), rules.kicks(typ, r, r + 1).collect());
+            kicks.insert(Kick(ori, ori.flip()), rules.kicks(typ, r, r + 2).collect());
         }
         Self { kicks }
     }

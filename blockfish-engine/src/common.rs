@@ -106,6 +106,15 @@ impl Orientation {
         }
     }
 
+    pub fn flip(self) -> Orientation {
+        match self {
+            Orientation::R0 => Orientation::R2,
+            Orientation::R1 => Orientation::R3,
+            Orientation::R2 => Orientation::R0,
+            Orientation::R3 => Orientation::R1,
+        }
+    }
+
     pub fn from_u8(x: u8) -> Option<Self> {
         match x {
             0 => Some(Orientation::R0),
@@ -128,6 +137,7 @@ pub enum Input {
     Right,
     CW,
     CCW,
+    Flip,
     Hold,
     SD,
     HD,

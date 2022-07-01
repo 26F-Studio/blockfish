@@ -79,7 +79,7 @@ impl FinesseFinder {
         }
 
         // try moving in every direction (including sonic-drop)
-        let neighbors = [Input::CW, Input::CCW, Input::Left, Input::Right, Input::SD]
+        let neighbors = [Input::CW, Input::CCW, Input::Flip, Input::Left, Input::Right, Input::SD]
             .iter()
             .filter_map(|&input| {
                 match input {

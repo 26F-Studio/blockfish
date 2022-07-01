@@ -125,7 +125,7 @@ impl<'r> View<'r> {
         };
 
         let left_right = &[Action::Game(MoveLeft), Action::Game(MoveRight)];
-        let ccw_cw = &[Action::Game(RotateCCW), Action::Game(RotateCW)];
+        let rotate = &[Action::Game(RotateCCW), Action::Game(RotateCW), Action::Game(RotateFlip)];
         let sd_hd = &[Action::Game(SonicDrop), Action::Game(HardDrop)];
         let hold = &[Action::Game(Hold)];
         let undo = &[Action::Game(Undo)];
@@ -134,7 +134,7 @@ impl<'r> View<'r> {
         game_ctrls.resize_with(7, Label::new);
         game_ctrls[0].set("game controls");
         game_ctrls[1].set(&label_text("\u{2190}, \u{2192}:         ", left_right));
-        game_ctrls[2].set(&label_text("ccw, cw:      ", ccw_cw));
+        game_ctrls[2].set(&label_text("ccw, cw, flip:", rotate));
         game_ctrls[3].set(&label_text("sd, hd:       ", sd_hd));
         game_ctrls[4].set(&label_text("hold:         ", hold));
         game_ctrls[5].set(&label_text("undo:         ", undo));

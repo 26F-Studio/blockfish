@@ -38,6 +38,8 @@ enum Kick {
     CW(u8),
     /// `CCW(r)` indicates a counter-clockwise rotation ending at rotation `r`.
     CCW(u8),
+    /// `FLAP(r)` indicates a 180 rotation ending at rotation `r`
+    FLIP(u8)
 }
 
 impl<'de> Deserialize<'de> for Kick {
@@ -50,12 +52,14 @@ impl<'de> Deserialize<'de> for Kick {
         match s.chars().nth(0) {
             Some('>') => s[1..].parse().map(Kick::CW).map_err(D::Error::custom),
             Some('<') => s[1..].parse().map(Kick::CCW).map_err(D::Error::custom),
+            Some('|') => s[1..].parse().map(Kick::FLIP).map_err(D::Error::custom),
             _ => Err(D::Error::custom("bad kick specification")),
         }
     }
 }
 
 static GUIDELINE_BYTES: &[u8] = include_bytes!("../../support/guideline.json");
+static TECHMINO_BYTES: &[u8] = include_bytes!("../../support/techmino.json");
 
 impl Ruleset {
     /// Returns a copy of the guideline rules.
@@ -89,7 +93,9 @@ impl Ruleset {
         rot0: i32,
         rot: i32,
     ) -> impl Iterator<Item = (i16, i16)> + 'a {
-        let kick = if rot0 < rot {
+        let kick = if (rot - rot0 + 2) % 4 == 0 {
+            Kick::FLIP(normalize_rot(rot))
+        } else if rot0 < rot {
             Kick::CW(normalize_rot(rot))
         } else {
             Kick::CCW(normalize_rot(rot))

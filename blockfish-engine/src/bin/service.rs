@@ -256,6 +256,7 @@ fn to_input_proto(i: blockfish::Input) -> protos::Input {
         blockfish::Input::Right => protos::Input::RIGHT,
         blockfish::Input::CW => protos::Input::CW,
         blockfish::Input::CCW => protos::Input::CCW,
+        blockfish::Input::Flip => protos::Input::FLIP,
         blockfish::Input::Hold => protos::Input::HOLD,
         blockfish::Input::SD => protos::Input::SD,
         blockfish::Input::HD => protos::Input::HD,

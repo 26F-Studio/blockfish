@@ -10,6 +10,7 @@ enum Input {
   HOLD = 4;
   SD = 5;
   HD = 6;
+  FLIP = 7;
 }
 
 message Snapshot {

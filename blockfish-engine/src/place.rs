@@ -107,7 +107,7 @@ impl<'s> PlaceFinder<'s> {
     fn expand(&mut self, pl: &Place<'s>) {
         let matrix = &self.matrix;
         self.queue.extend(
-            [Input::Left, Input::Right, Input::CW, Input::CCW]
+            [Input::Left, Input::Right, Input::CW, Input::CCW, Input::Flip]
                 .iter()
                 .filter_map(|&inp| pl.input(matrix, inp)),
         );

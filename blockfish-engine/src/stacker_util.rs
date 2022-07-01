@@ -56,6 +56,9 @@ impl StackerExt for block_stacker::Stacker {
             Input::CW => {
                 self.rotate(1);
             }
+            Input::Flip => {
+                self.rotate(2);
+            }
             Input::Hold => {
                 self.hold();
             }
