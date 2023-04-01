@@ -20,6 +20,9 @@ pub use stacker_util::StackerExt;
 #[cfg(feature = "gen-shtb")]
 pub use shape::ShapeTable;
 
+#[cfg(feature = "service")]
+pub use shape::{srs, trs};
+
 #[cfg(feature = "protos")]
 mod protos_generated {
     include!(concat!(env!("OUT_DIR"), "/generated/mod.rs"));

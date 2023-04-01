@@ -150,8 +150,18 @@ impl Service {
     }
 
     /// Handles a "set_ruleset" request.
-    fn set_ruleset(&mut self, _: protos::Request_Ruleset) -> Result<()> {
-        log::warn!("`set_ruleset` is useless currently");
+    fn set_ruleset(&mut self, msg: protos::Request_Ruleset) -> Result<()> {
+        use blockfish::{Rule, srs, trs};
+        // log::warn!("`set_ruleset` is useless currently");
+        if msg.has_srs() && self.ai.config().rule != Rule::Guideline {
+            self.ai.config_mut().rule = Rule::Guideline;
+            *self.ai.shape_table_mut() = std::sync::Arc::new(srs());
+        } else if msg.has_trs() && self.ai.config().rule != Rule::Techmino {
+            self.ai.config_mut().rule = Rule::Techmino;
+            *self.ai.shape_table_mut() = std::sync::Arc::new(trs());
+        } else {
+            log::warn!("got an unknown ruleset");
+        }
         Ok(())
     }
 

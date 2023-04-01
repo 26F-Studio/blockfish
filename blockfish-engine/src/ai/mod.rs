@@ -87,6 +87,10 @@ impl AI {
         &mut self.config
     }
 
+    pub fn shape_table_mut(&mut self) -> &mut std::sync::Arc<ShapeTable> {
+        &mut self.shape_table
+    }
+
     /// Begins a new analysis of `snapshot`, returning a handle to it.
     pub fn analyze(&mut self, snapshot: Snapshot) -> Analysis {
         analysis::spawn(

@@ -40,8 +40,10 @@ message Request {
 
   message Ruleset {
     message SRS {}
+    message TRS {}
     oneof ruleset {
       SRS srs = 1;
+      TRS trs = 2;
     }
   }
 
