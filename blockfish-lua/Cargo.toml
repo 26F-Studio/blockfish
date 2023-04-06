@@ -1,0 +1,32 @@
+[package]
+name = "blockfish-lua"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lib]
+name = "blockfish"
+crate-type = ["cdylib"]
+
+[dependencies]
+mlua = {version = "0.8", features = ["module", "luajit"]}
+
+[dependencies.blockfish]
+path = "../blockfish-engine"
+features = ["block-stacker", "service"]
+
+[dependencies.block-stacker]
+path = "../block-stacker"
+
+[target.x86_64-apple-darwin]
+rustflags = [
+  "-C", "link-arg=-undefined",
+  "-C", "link-arg=dynamic_lookup",
+]
+
+[target.aarch64-apple-darwin]
+rustflags = [
+  "-C", "link-arg=-undefined",
+  "-C", "link-arg=dynamic_lookup",
+]
