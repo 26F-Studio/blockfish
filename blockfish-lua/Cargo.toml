@@ -11,13 +11,7 @@ crate-type = ["cdylib"]
 
 [dependencies]
 mlua = {version = "0.8", features = ["module", "luajit"]}
-
-[dependencies.blockfish]
-path = "../blockfish-engine"
-features = ["block-stacker", "service"]
-
-[dependencies.block-stacker]
-path = "../block-stacker"
+blockfish = {path = "../blockfish-engine", features = ["service"]}
 
 [target.x86_64-apple-darwin]
 rustflags = [
