@@ -3,9 +3,6 @@ use mlua::prelude::*;
 struct Service(blockfish::ai::AI);
 impl LuaUserData for Service {
   fn add_fields<'lua, F: LuaUserDataFields<'lua, Self>>(fields: &mut F) {
-    fields.add_field_method_get("config", |_, this| {
-      Ok(Config(this.0.config().clone()))
-    });
     fields.add_field_method_set("config", |_, this, msg: Config| {
       if this.0.config().rule != msg.0.rule {
         this.0.config_mut().rule = msg.0.rule.clone();
@@ -34,6 +31,9 @@ impl LuaUserData for Service {
         .map(|&id| Suggestion(analysis.suggestion(id, std::usize::MAX)))
         .collect::<Vec<_>>();
       Ok((stats, res))
+    });
+    methods.add_method("get_config_clone", |_, this, ()| {
+      Ok(Config(this.0.config().clone()))
     });
   }
 }
