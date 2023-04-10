@@ -90,7 +90,7 @@ impl<'lua> FromLua<'lua> for Snapshot {
     let next: String = table.get("next")?;
     let field: Vec<bool> = table.get("field")?;
     let mut matrix = blockfish::BasicMatrix::with_cols(10);
-    for i in 0..std::cmp::min(field.len(), 400) {
+    for i in 0..field.len().clamp(0, 400) {
       if field[i] {
         matrix.set(((i / 10) as u16, (i % 10) as u16));
       }
