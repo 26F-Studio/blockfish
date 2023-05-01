@@ -4,7 +4,7 @@ use std::{collections::HashMap, ops::RangeInclusive};
 use thiserror::Error;
 
 /// Holds all of the shapes associated with some set of game rules.
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct ShapeTable {
     shapes: HashMap<Color, ShapeData>,
     matrices: Vec<BasicMatrix>,
@@ -19,7 +19,7 @@ impl ShapeTable {
     }
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 struct ShapeData {
     #[serde(rename = "j0")]
     spawn_col: i16,

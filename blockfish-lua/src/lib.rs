@@ -4,13 +4,6 @@ struct Service(blockfish::ai::AI);
 impl LuaUserData for Service {
   fn add_fields<'lua, F: LuaUserDataFields<'lua, Self>>(fields: &mut F) {
     fields.add_field_method_set("config", |_, this, msg: Config| {
-      if this.0.config().rule != msg.0.rule {
-        this.0.config_mut().rule = msg.0.rule.clone();
-        *this.0.shape_table_mut() = std::sync::Arc::new(match msg.0.rule {
-          blockfish::Rule::Guideline => blockfish::srs(),
-          blockfish::Rule::Techmino => blockfish::trs(),
-        });
-      }
       this.0.config_mut().search_limit = msg.0.search_limit;
       this.0.config_mut().parameters.row_factor = msg.0.parameters.row_factor;
       this.0.config_mut().parameters.piece_estimate_factor = msg.0.parameters.piece_estimate_factor;
@@ -32,7 +25,7 @@ impl LuaUserData for Service {
         .collect::<Vec<_>>();
       Ok((stats, res))
     });
-    methods.add_method("get_config_clone", |_, this, ()| {
+    methods.add_method("config", |_, this, ()| {
       Ok(Config(this.0.config().clone()))
     });
   }
@@ -130,12 +123,6 @@ impl LuaUserData for Config {
     });
 
     // getters
-    fields.add_field_method_get("rule", |_, this| {
-      Ok(match this.0.rule {
-        blockfish::Rule::Guideline => "srs",
-        blockfish::Rule::Techmino => "trs",
-      })
-    });
     fields.add_field_method_get("search_limit", |_, this| {
       Ok(this.0.search_limit)
     });
@@ -152,26 +139,25 @@ impl LuaUserData for Config {
       Ok(this.0.parameters.piece_penalty)
     });
   }
-  fn add_methods<'lua, M: LuaUserDataMethods<'lua, Self>>(methods: &mut M) {
-    methods.add_method_mut("set_srs", |_, this, ()| {
-      this.0.rule = blockfish::Rule::Guideline;
-      Ok(())
-    });
-    methods.add_method_mut("set_trs", |_, this, ()| {
-      this.0.rule = blockfish::Rule::Techmino;
-      Ok(())
-    });
-  }
+}
+
+#[derive(Clone)]
+struct RotationSystem(blockfish::ShapeTable);
+impl LuaUserData for RotationSystem {
 }
 
 #[mlua::lua_module]
 fn blockfish(lua: &Lua) -> LuaResult<LuaTable> {
   let exports = lua.create_table()?;
-  exports.set("init", lua.create_function(|_, config: Config| {
-    Ok(Service(blockfish::ai::AI::new(config.0)))
+  exports.set("init", lua.create_function(|_, (config, rotation_system): (Config, RotationSystem)| {
+    Ok(Service(blockfish::ai::AI::new_with_shapetable(config.0, rotation_system.0)))
   })?)?;
   exports.set("default_config", lua.create_function(|_, ()| {
     Ok(Config(blockfish::Config::default()))
+  })?)?;
+  exports.set("new_rs", lua.create_function(|_, rotation_system: String| {
+    let ruleset = serde_json::from_str::<block_stacker::Ruleset>(&rotation_system).expect("invalid ruleset");
+    Ok(RotationSystem(blockfish::ShapeTable::from_ruleset(&ruleset)))
   })?)?;
   Ok(exports)
 }

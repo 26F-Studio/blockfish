@@ -150,8 +150,10 @@ dependencies = [
 name = "blockfish-lua"
 version = "0.1.0"
 dependencies = [
+ "block-stacker",
  "blockfish",
  "mlua",
+ "serde_json",
 ]
 
 [[package]]

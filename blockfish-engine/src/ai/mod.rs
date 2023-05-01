@@ -79,6 +79,14 @@ impl AI {
         }
     }
 
+    pub fn new_with_shapetable(config: Config, shape_table: ShapeTable) -> Self {
+        Self {
+            config,
+            shape_table: std::sync::Arc::new(shape_table),
+            all_tx: None,
+        }
+    }
+
     pub fn config(&self) -> Config {
         self.config.clone()
     }

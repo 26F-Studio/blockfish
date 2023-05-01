@@ -12,6 +12,9 @@ crate-type = ["cdylib"]
 [dependencies]
 mlua = {version = "0.8", features = ["module", "luajit"]}
 blockfish = {path = "../blockfish-engine", features = ["gen-shtb"]}
+block-stacker = {path = "../block-stacker"}
+serde_json = "1.0"
+
 
 [target.x86_64-apple-darwin]
 rustflags = [
